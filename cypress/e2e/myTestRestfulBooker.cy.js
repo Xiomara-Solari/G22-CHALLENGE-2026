@@ -27,4 +27,14 @@ describe('Test RestfulBooker', () => {
       .contains('Book now')
       .should('have.length.at.least', 1); // Verifica que haya como mínimo 1 habitación cargada
 });
+
+ it('Acceder a las habitaciones disponibles desde la barra de navegación', () => {
+  // 1. Buscamos el botón "Rooms" en la barra de navegación y hacemos click
+    cy.contains('a', 'Rooms')
+      .should('be.visible')
+      .click();
+    // Verifica que el contenedor general del listado sea visible.
+    cy.contains('h2', 'Our Rooms').should('be.visible');
+
+});
 });
