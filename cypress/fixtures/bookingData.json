@@ -1,0 +1,21 @@
+{
+  "reservaValida": {
+    "firstname": "Natalia",
+    "lastname": "Caporale",
+    "email": "natalia@ejemplo.com",
+    "phone": "01112345678"
+  },
+  "reservaInvalida": {
+    "firstname": "",
+    "lastname": "",
+    "email": "correoInvalido@",
+    "phone": "123"
+  },
+  "contactoValido": {
+    "name": "Grupo 22 Tester",
+    "email": "grupo22@testing.com",
+    "phone": "123456789012",
+    "subject": "Consulta de Reserva",
+    "message": "Hola, estamos enviando este mensaje automatizado para probar el correcto funcionamiento del formulario de contacto de Shady Meadows."
+  }
+}
