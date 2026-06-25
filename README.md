@@ -9,7 +9,7 @@ Repositorio oficial para el trabajo final práctico del curso de QA Automation (
 ## 👥 Integrantes del Equipo
 * Solari Xiomara - xiomarasolari@gmail.com
 * Natalia Caporale Campaña - nataliacaporalec@gmail.com
-* Nombre Apellido - 
+* Rodriguez Ignacio Alberto - iniaki0303@gmail.com
 
 ## 🚀 Tecnologías y Herramientas
 * **Cypress:** Automatización de pruebas E2E y de API.
