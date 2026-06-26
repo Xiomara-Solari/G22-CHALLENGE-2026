@@ -113,16 +113,11 @@ describe('Test RestfulBooker - Shady Meadows', function() {
 
     // -----------------------------------------------------------------------
     // Paso 4: Enviar el formulario VACIO (sin completar ningun campo).
-    // Se vuelve a hacer clic en "Reserve Now" para forzar las validaciones
-    // del servidor con todos los campos vacios.
     // -----------------------------------------------------------------------
     cy.get('button:contains("Reserve Now")').click();
 
     // -----------------------------------------------------------------------
     // Paso 5: Verificar que aparezcan los mensajes de error del servidor.
-    // El backend devuelve validaciones especificas para campos obligatorios
-    // vacios ("must not be null") y restricciones de longitud ("size must
-    // be between"). Se verifica que AMBOS mensajes esten presentes en la UI.
     // -----------------------------------------------------------------------
     cy.get('.alert-danger').should('contain.text', 'must not be null');
     cy.get('.alert-danger').should('contain.text', 'size must be between');
@@ -130,8 +125,7 @@ describe('Test RestfulBooker - Shady Meadows', function() {
     // -----------------------------------------------------------------------
     // Paso 6: Verificar que el formulario SIGUE ABIERTO en pantalla.
     // Si la reserva se hubiera creado (lo cual no deberia ocurrir con datos
-    // vacios), el formulario desapareceria. Esta asercion confirma que la
-    // reserva NO fue creada y que el usuario permanece en la misma pantalla.
+    // vacios), el formulario desapareceria. 
     // -----------------------------------------------------------------------
     cy.get('.book-room').should('be.visible');
   });
@@ -143,26 +137,18 @@ describe('Test RestfulBooker - Shady Meadows', function() {
     // -----------------------------------------------------------------------
     // Paso 1: Hacer scroll hasta el boton de envio para asegurar que el
     // formulario de contacto (ubicado en el footer de la pagina) sea
-    // completamente visible e interactivo. Esto evita errores de
-    // "element not interactable" que ocurren cuando un elemento esta
-    // fuera del viewport.
+    // completamente visible e interactivo.
     // -----------------------------------------------------------------------
     cy.get('#submitContact').scrollIntoView().should('be.visible');
 
     // -----------------------------------------------------------------------
     // Paso 2: Completar y enviar el formulario de contacto con datos
-    // validos provenientes del fixture. El comando personalizado
-    // `enviarMensajeContacto` se encarga de rellenar todos los campos
-    // (name, email, phone, subject, message) y hacer clic en el boton
-    // de envio, siguiendo el principio DRY.
+    // validos provenientes del fixture. 
     // -----------------------------------------------------------------------
     cy.enviarMensajeContacto(this.datos.contactoValido);
 
     // -----------------------------------------------------------------------
     // Paso 3: Validar que el mensaje se haya enviado correctamente.
-    // Se verifica que la UI muestre el mensaje de confirmacion
-    // "Thanks for getting in touch" junto con el nombre del remitente,
-    // lo que confirma que el servidor proceso y respondio al envio.
     // -----------------------------------------------------------------------
     cy.contains('.contact', 'Thanks for getting in touch')
       .should('be.visible')
