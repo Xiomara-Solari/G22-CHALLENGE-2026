@@ -3,8 +3,8 @@
 Repositorio oficial para el trabajo final práctico del curso de QA Automation (Cohorte I - 2026). El objetivo es automatizar flujos clave y reportar bugs del sistema de reservas Shady Meadows.
 
 ## 📋 Enlaces Importantes
-* 📄 **Planilla de Casos de Prueba:** []
-* 🐞 **Reporte de Bugs:** []
+* 📄 **Planilla de Casos de Prueba:** [https://docs.google.com/spreadsheets/d/1MU-88cS7gOhnPgcnF9iJOwTlyy8Qq9DUadVEMODMJxA/edit?gid=1611920195#gid=1611920195]
+* 🐞 **Reporte de Bugs:** [https://trello.com/b/C56qtaMP/g22-challenge-final]
 
 ## 👥 Integrantes del Equipo
 * Solari Xiomara - xiomarasolari@gmail.com
