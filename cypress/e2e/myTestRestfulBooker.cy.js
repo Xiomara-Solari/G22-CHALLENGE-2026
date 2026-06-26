@@ -1,66 +1,172 @@
-describe('Test RestfulBooker', function() {
+describe('Test RestfulBooker - Shady Meadows', function() {
+
+  // =========================================================================
+  // Configuracion global: se ejecuta antes de cada test.
+  // Se cargan los datos de prueba desde el fixture y se navega a la URL base
+  // para garantizar que cada test arranque desde un estado limpio y
+  // completamente independiente.
+  // =========================================================================
   beforeEach(function() {
     cy.fixture('bookingData').as('datos');
     cy.visit('https://automationintesting.online/');
   });
 
-  // Test ADMIN
-  it('Navegar al panel de admin y loguearse con éxito', function() {
-    cy.contains('a', 'Admin panel')
-      .scrollIntoView()
-      .should('be.visible')
-      .click();
-    cy.url().should('include', '/admin');
-    cy.get('#username').type('admin');
-    cy.get('#password').type('password');
-    cy.get('button[type="submit"]').click();
-    cy.url().should('include', '/admin/rooms');
-  });
-
-  // Test Rooms Catalog
-  it('Hay habitaciones disponibles', function() {
+  // =========================================================================
+  // 3.1 - Reserva Exitosa como Usuario Invitado
+  // =========================================================================
+  it('Debería completar una reserva exitosa como usuario invitado', function() {
+    // -----------------------------------------------------------------------
+    // Paso 1: Verificar que el catalogo de habitaciones se haya cargado
+    // correctamente antes de intentar interactuar con el.
+    // Se comprueba que el titulo "Our Rooms" sea visible y que exista al
+    // menos un boton "Book now" disponible. Esto evita falsos positivos
+    // por intentar seleccionar una habitacion que aun no se renderizo.
+    // -----------------------------------------------------------------------
     cy.contains('h2', 'Our Rooms').should('be.visible');
-    cy.get(':nth-child(1) > .card > .card-footer > .btn')
-      .contains('Book now')
-      .should('have.length.at.least', 1);
-  });
+    cy.get('#rooms .card-footer .btn').should('have.length.at.least', 1);
 
-  it('Acceder a las habitaciones disponibles desde la barra de navegación', function() {
-    cy.contains('a', 'Rooms')
-      .should('be.visible')
-      .click();
-    cy.contains('h2', 'Our Rooms').should('be.visible');
-  });
+    // -----------------------------------------------------------------------
+    // Paso 2: Abrir el formulario de reserva de la primera habitacion.
+    // El comando personalizado `abrirHabitacionNumero` se encarga de hacer
+    // clic en el boton "Book now" de la habitacion indicada y despliega el
+    // calendario interactivo de reservas (react-big-calendar).
+    // -----------------------------------------------------------------------
+    cy.abrirHabitacionNumero(0);
 
-  it('Debería completar el formulario de reserva con datos válidos', function() {
-    cy.abrirHabitacionNumero(1);
+    // -----------------------------------------------------------------------
+    // Paso 3: Validar que el calendario interactivo se haya desplegado
+    // correctamente. Sin el calendario visible, no es posible seleccionar
+    // un rango de fechas, por lo que esta asercion es critica para
+    // continuar con el flujo.
+    // -----------------------------------------------------------------------
     cy.get('.rbc-calendar').should('be.visible');
 
+    // -----------------------------------------------------------------------
+    // Paso 4: Seleccionar un rango de fechas en el calendario.
+    // Se utiliza el comando personalizado que recibe los indices de las
+    // celdas de fecha (check-in y check-out) y simula la interaccion
+    // del usuario sobre el calendario mensual.
+    // -----------------------------------------------------------------------
     cy.seleccionarRangoDeFechasEnElCalendario(10, 12);
 
+    // -----------------------------------------------------------------------
+    // Paso 5: Abrir el formulario de datos personales haciendo clic en
+    // "Reserve Now". Este boton despliega los campos de nombre, apellido,
+    // email y telefono para completar la reserva.
+    // -----------------------------------------------------------------------
     cy.get('button:contains("Reserve Now")').click();
 
-    cy.completarFormularioDeReservaConDatosValidos('Natalia', 'Caporale', 'natalia@ejemplo.com', '011234567891');
+    // -----------------------------------------------------------------------
+    // Paso 6: Completar el formulario con datos validos provenientes
+    // EXCLUSIVAMENTE del fixture cargado en el beforeEach.
+    // El uso de `this.datos.reservaValida` garantiza que los datos de
+    // prueba sean centralizados, reutilizables y faciles de modificar.
+    // -----------------------------------------------------------------------
+    cy.completarFormularioReserva(
+      this.datos.reservaValida.firstname,
+      this.datos.reservaValida.lastname,
+      this.datos.reservaValida.email,
+      this.datos.reservaValida.phone
+    );
+
+    // -----------------------------------------------------------------------
+    // Paso 7: Confirmar la reserva haciendo clic en "Reserve Now".
+    // Este segundo clic en el mismo boton envía el formulario ya completo
+    // al servidor para procesar la reserva.
+    // -----------------------------------------------------------------------
     cy.get('button:contains("Reserve Now")').click();
 
+    // -----------------------------------------------------------------------
+    // Paso 8: Validar que la reserva se haya creado exitosamente.
+    // Se verifica que aparezca el cartel de confirmacion con el texto
+    // "Booking Confirmed" y el detalle de las fechas seleccionadas.
+    // Esta asercion sobre la UI es la unica forma de garantizar que el
+    // flujo completo (frontend + backend) funcionó correctamente.
+    // -----------------------------------------------------------------------
     cy.get('.card-body')
       .should('be.visible')
       .and('contain.text', 'Booking Confirmed')
       .and('contain.text', 'Your booking has been confirmed for the following dates:');
   });
 
-  // Prueba 3.2: Validaciones del formulario de reserva (Camino Negativo)
+  // =========================================================================
+  // 3.2 - Validaciones del Formulario de Reserva (Camino Negativo)
+  // =========================================================================
   it('Validar que el formulario de reserva muestre errores cuando se envía vacío', function() {
-    cy.abrirHabitacionNumero(1);
+    // -----------------------------------------------------------------------
+    // Paso 1: Abrir el formulario de reserva de la primera habitacion.
+    // -----------------------------------------------------------------------
+    cy.abrirHabitacionNumero(0);
     cy.get('.rbc-calendar').should('be.visible');
+
+    // -----------------------------------------------------------------------
+    // Paso 2: Seleccionar un rango de fechas en el calendario.
+    // Es necesario seleccionar fechas antes de poder abrir el formulario,
+    // ya que la validacion del lado del servidor requiere este paso previo.
+    // -----------------------------------------------------------------------
     cy.seleccionarRangoDeFechasEnElCalendario(10, 12);
+
+    // -----------------------------------------------------------------------
+    // Paso 3: Abrir el formulario de reserva haciendo clic en "Reserve Now".
+    // -----------------------------------------------------------------------
     cy.get('button:contains("Reserve Now")').click();
 
-    cy.get('.book-room').click();
+    // -----------------------------------------------------------------------
+    // Paso 4: Enviar el formulario VACIO (sin completar ningun campo).
+    // Se vuelve a hacer clic en "Reserve Now" para forzar las validaciones
+    // del servidor con todos los campos vacios.
+    // -----------------------------------------------------------------------
+    cy.get('button:contains("Reserve Now")').click();
 
+    // -----------------------------------------------------------------------
+    // Paso 5: Verificar que aparezcan los mensajes de error del servidor.
+    // El backend devuelve validaciones especificas para campos obligatorios
+    // vacios ("must not be null") y restricciones de longitud ("size must
+    // be between"). Se verifica que AMBOS mensajes esten presentes en la UI.
+    // -----------------------------------------------------------------------
     cy.get('.alert-danger').should('contain.text', 'must not be null');
     cy.get('.alert-danger').should('contain.text', 'size must be between');
 
+    // -----------------------------------------------------------------------
+    // Paso 6: Verificar que el formulario SIGUE ABIERTO en pantalla.
+    // Si la reserva se hubiera creado (lo cual no deberia ocurrir con datos
+    // vacios), el formulario desapareceria. Esta asercion confirma que la
+    // reserva NO fue creada y que el usuario permanece en la misma pantalla.
+    // -----------------------------------------------------------------------
     cy.get('.book-room').should('be.visible');
   });
+
+  // =========================================================================
+  // 3.3 - Formulario de Contacto (Pie de Pagina)
+  // =========================================================================
+  it('Debería enviar el formulario de contacto con datos válidos', function() {
+    // -----------------------------------------------------------------------
+    // Paso 1: Hacer scroll hasta el boton de envio para asegurar que el
+    // formulario de contacto (ubicado en el footer de la pagina) sea
+    // completamente visible e interactivo. Esto evita errores de
+    // "element not interactable" que ocurren cuando un elemento esta
+    // fuera del viewport.
+    // -----------------------------------------------------------------------
+    cy.get('#submitContact').scrollIntoView().should('be.visible');
+
+    // -----------------------------------------------------------------------
+    // Paso 2: Completar y enviar el formulario de contacto con datos
+    // validos provenientes del fixture. El comando personalizado
+    // `enviarMensajeContacto` se encarga de rellenar todos los campos
+    // (name, email, phone, subject, message) y hacer clic en el boton
+    // de envio, siguiendo el principio DRY.
+    // -----------------------------------------------------------------------
+    cy.enviarMensajeContacto(this.datos.contactoValido);
+
+    // -----------------------------------------------------------------------
+    // Paso 3: Validar que el mensaje se haya enviado correctamente.
+    // Se verifica que la UI muestre el mensaje de confirmacion
+    // "Thanks for getting in touch" junto con el nombre del remitente,
+    // lo que confirma que el servidor proceso y respondio al envio.
+    // -----------------------------------------------------------------------
+    cy.contains('.contact', 'Thanks for getting in touch')
+      .should('be.visible')
+      .and('contain.text', this.datos.contactoValido.name);
+  });
+
 });
